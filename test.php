@@ -6,6 +6,7 @@ use Personal\CsvHandler\Functionalities\AddIndexingFunctionality;
 use Personal\CsvHandler\Functionalities\ReorderFileFunctionality;
 use Personal\CsvHandler\Functionalities\RemoveColumnFunctionality;
 use Personal\CsvHandler\Functionalities\TruncateColumnFunctionality;
+use Personal\CsvHandler\Functionalities\ReformatDateTimeFunctionality;
 
 $options = [];
 $filePath = "";
@@ -58,11 +59,16 @@ try{
         $functionality = new RemoveColumnFunctionality();
         $functionality->modify($options['remove-column'], $stream);
 
-    }elseif (isset($options['truncate-column'])) {
+    } elseif (isset($options['truncate-column'])) {
 
         $functionality = new TruncateColumnFunctionality();
         $functionality->modify($options['truncate-column'] . "," . $options["truncate-length"], $stream);
         
+    } elseif(isset($options['reformat-date-time'])) {
+
+        $functionality = new ReformatDateTimeFunctionality();
+        $functionality->modify($options['reformat-date-time'] . "," . $options["reformat-date-time-format"], $stream);
+
     } else {
 
         throw new Exception("No valid functionality option provided.");
