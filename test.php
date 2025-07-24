@@ -7,6 +7,8 @@ use Personal\CsvHandler\Functionalities\ReorderFileFunctionality;
 use Personal\CsvHandler\Functionalities\RemoveColumnFunctionality;
 use Personal\CsvHandler\Functionalities\TruncateColumnFunctionality;
 use Personal\CsvHandler\Functionalities\ReformatDateTimeFunctionality;
+use Personal\CsvHandler\Functionalities\EncryptionFunctionality;
+use Personal\CsvHandler\Functionalities\DecryptionFunctionality;
 
 $options = [];
 $filePath = "";
@@ -68,6 +70,16 @@ try{
 
         $functionality = new ReformatDateTimeFunctionality();
         $functionality->modify($options['reformat-date-time'] . "," . $options["reformat-date-time-format"], $stream);
+
+    } elseif(isset($options['encrypt-column'])) {
+
+        $functionality = new EncryptionFunctionality();
+        $functionality->modify($options['encrypt-column'], $stream);
+
+    } elseif(isset($options['decrypt-column'])) {
+
+        $functionality = new DecryptionFunctionality();
+        $functionality->modify($options['decrypt-column'], $stream);
 
     } else {
 

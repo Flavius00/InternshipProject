@@ -1,5 +1,5 @@
 id,name,created_at,email
-1,Alex,2024-12-31 14:00:00,alex@example.com
-2,Bianca,2025-01-15 09:30:00,bianca@example.com
-3,Cosmin,2025-07-23 16:45:00,cosmin@example.com
-4,Daria,2025-07-23 16:45:00,daria@example.com
+1,Alex,31-12-2024,alex@example.com
+2,Bianca,15-01-2025,bianca@example.com
+3,Cosmin,23-07-2025,cosmin@example.com
+4,Daria,23-07-2025,daria@example.com
