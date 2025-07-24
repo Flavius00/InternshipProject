@@ -1,0 +1,17 @@
+{
+    "name": "personal/csv_handler",
+    "autoload": {
+        "psr-4": {
+            "Personal\\CsvHandler\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Flavius"
+        }
+    ],
+    "require": {
+        "php-ds/php-ds": "^1.7",
+        "nesbot/carbon": "^3.10"
+    }
+}
