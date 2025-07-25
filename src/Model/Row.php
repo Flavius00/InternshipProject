@@ -1,0 +1,155 @@
+<?php
+
+namespace Personal\CsvHandler\Model;
+
+use Ds\Vector;
+use Carbon\Carbon;
+
+class Row
+{
+    private Vector $cells;
+
+    public function __construct()
+    {
+        $this->cells = new Vector();
+    }
+
+    public function __toString()
+    {
+        return implode(',', $this->cells->toArray());
+    }
+
+    public function equals(Row $other): bool
+    {
+        if ($this->count() !== $other->count()) {
+            return false;
+        }
+
+        foreach ($this->cells as $index => $cell) {
+            if ($cell !== $other->cells->get($index)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function addCell(string | int $cell): void
+    {
+        $this->cells->push($cell);
+    }
+
+    public function headerToIndex(string $header): int
+    {
+        return $this->cells->find($header) === false ? -1 : $this->cells->find($header);
+    }
+
+    public function getOrderFrom(Row $headers): Vector
+    {
+        $newOrder = new Vector();
+        foreach ($this->cells as $cell) {
+            $index = $headers->headerToIndex(trim($cell));
+            if ($index === -1) {
+                throw new \InvalidArgumentException("Header '$cell' not found in headers row.");
+            }
+            $newOrder->push($index);
+        }
+        return $newOrder;
+    }
+
+    public function removeCell(int $index): void
+    {
+        $this->cells->remove($index);
+    }
+
+    public function addIndex(int | string $index): void
+    {
+        $this->cells->unshift($index);
+    }
+
+    public function reorderCells(Vector $newOrder): void
+    {
+        $this->cells = $newOrder->map(fn($i) => $this->cells->get($i));
+    }
+
+    public function count(): int
+    {
+        return $this->cells->count();
+    }
+
+    public function truncateCell(int $index, int $length): void
+    {
+        if (!is_string($this->cells->get($index))) {
+            throw new \InvalidArgumentException("Cell at index $index is not a string.");
+        }
+
+        $this->cells->set($index, substr($this->cells->get($index), 0, $length));
+    }
+
+    public function reformatDate(int $index, string $format): void
+    {
+        if (!is_string($this->cells->get($index))) {
+            throw new \InvalidArgumentException("Cell at index $index is not a string.");
+        }
+
+        $date = Carbon::createFromFormat($format, $this->cells->get($index));
+
+        if ($date === false) {
+            throw new \InvalidArgumentException("Invalid date format for cell at index $index.");
+        }
+
+        $this->cells->set($index, $date->format($format));
+    }
+
+    public function encryptCell(int $index, string $key): void
+    {
+        if (!is_string($this->cells->get($index))) {
+            throw new \InvalidArgumentException("Cell at index $index is not a string.");
+        }
+
+        if (! openssl_public_encrypt($this->cells->get($index), $encrypted, $key)) {
+            throw new \Exception("Encryption failed for value: " . openssl_error_string());
+        }
+
+        $this->cells->set($index, base64_encode($encrypted));
+    }
+
+    public function decryptCell(int $index, string $key): void
+    {
+        if (!is_string($this->cells->get($index))) {
+            throw new \InvalidArgumentException("Cell at index $index is not a string.");
+        }
+
+        $data = base64_decode($this->cells->get($index));
+        if (! openssl_private_decrypt($data, $decrypted, $key)) {
+            throw new \Exception("Decryption failed for value: " . openssl_error_string());
+        }
+
+        $this->cells->set($index, $decrypted);
+    }
+
+    public function signCell(int $index, string $privateKey): void
+    {
+        if (!is_string($this->cells->get($index))) {
+            throw new \InvalidArgumentException("Cell at index $index is not a string.");
+        }
+
+        if (!openssl_sign($this->cells->get($index), $signature, $privateKey)) {
+            throw new \Exception("Signing failed for value: " . openssl_error_string());
+        }
+
+        $this->cells->push(base64_encode($signature));
+    }
+
+    public function verifyCell(int $index, string $publicKey): bool
+    {
+        if (!is_string($this->cells->get($index))) {
+            throw new \InvalidArgumentException("Cell at index $index is not a string.");
+        }
+
+        $data = $this->cells->get($index);
+        $signature = base64_decode($this->cells->last());
+
+        return openssl_verify($data, $signature, $publicKey) === 1;
+    }
+}

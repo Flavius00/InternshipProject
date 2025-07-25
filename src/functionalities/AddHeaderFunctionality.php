@@ -1,32 +1,23 @@
 <?php
 
 namespace Personal\CsvHandler\Functionalities;
-use SplFileObject;
 
-class AddHeaderFunctionality implements Functionality
+use Personal\CsvHandler\Model\Tabel;
+use Personal\CsvHandler\Model\Row;
+
+class AddHeaderFunctionality implements OneFileFunctionality
 {
-    public function modify(string $input, SplFileObject $stream): void
+    public function modify(string $header, Tabel $tabel): void
     {
-        // Implementation for adding a header
-        try{
+        // Split the header string into an array of column names
+        $columns = explode(',', rtrim($header));
 
-            if($stream->getSize() === 0) {
-                throw new \Exception("Stream is empty, cannot add header.");
-            }
-            
-            if(strlen($input) === 0) {
-                throw new \Exception("Input string cannot be empty.");
-            }
-
-            $originalContent = $stream->fread($stream->getSize());
-            $stream->fseek(0);
-            $stream->fwrite($input. "\n". $originalContent);
-            $stream->fflush();
-
-        }catch (\Exception $e) {
-
-            error_log("Error modifying stream: " . $e->getMessage());
+        // Add the header row to the table
+        $headerRow = new Row();
+        foreach ($columns as $column) {
+            $headerRow->addCell(trim($column));
         }
-        
+
+        $tabel->addHeader($headerRow);
     }
 }
