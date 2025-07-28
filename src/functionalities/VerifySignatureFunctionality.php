@@ -19,11 +19,6 @@ class VerifySignatureFunctionality implements OneFileFunctionality
         if (!$tabel->verifyColumn($column, $publicKey)) {
             throw new \RuntimeException("Signature verification failed for column: $column");
         }
-
-        echo "============================================================\n";
-        echo "Signature verification successful for column: $column\n";
-        echo "============================================================\n";
-
         $publicKey = null; // Clear the variable to free memory
     }
 }

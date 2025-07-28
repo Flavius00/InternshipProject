@@ -4,7 +4,8 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use Ds\Vector;
 use Personal\CsvHandler\Model\Tabel;
-use Personal\CsvHandler\Utils\CsvToTabel;
+use Personal\CsvHandler\Convertors\FileToTableImpl\CsvToTabel;
+use Personal\CsvHandler\Convertors\TableToFileImpl\TableToCsv;
 use Personal\CsvHandler\Functionalities\AddHeaderFunctionality;
 use Personal\CsvHandler\Functionalities\ReorderFileFunctionality;
 use Personal\CsvHandler\Functionalities\EncryptFunctionality;
@@ -46,12 +47,16 @@ try {
         }
     }
 
-
     $tabel1 = new Tabel();
     $tabel1 = CsvToTabel::convert($streams->get(0));
 
-    $tabel2 = new Tabel();
-    $tabel2 = CsvToTabel::convert($streams->get(1));
+    if ($streams->count() < 2) {
+        $tabel2 = null;
+    } else {
+        $tabel2 = new Tabel();
+        $tabel2 = CsvToTabel::convert($streams->get(1));
+    }
+
 
     $stream = null; // Close the file stream after reading
 
@@ -129,16 +134,17 @@ try {
             if ($tabel2 === null) {
                 throw new Exception("Second table is required for merging.");
             }
-            $tabel1->mergeTwoTabels($tabel2);
+            $tabel1->appendFromTable($tabel2);
             break;
 
         default:
             throw new Exception("No valid functionality option provided.");
     }
 
-    $tabel1->print();
-} catch (Exception $e) {
+    TableToCsv::convert($tabel1);
+} catch (\Throwable $e) {
     echo "Error: " . $e->getMessage() . "\n";
+    exit(1);
 } finally {
     echo "Operation completed.\n";
 }

@@ -19,19 +19,28 @@ class Row
         return implode(',', $this->cells->toArray());
     }
 
-    public function equals(Row $other): bool
+    public function clone(): Row
+    {
+        $newRow = clone $this;
+        return $newRow;
+    }
+
+    public function getCells(): Vector
+    {
+        return $this->cells;
+    }
+
+    public function verifyCompatibility(Row $other): bool
     {
         if ($this->count() !== $other->count()) {
-            return false;
+            throw new \InvalidArgumentException("Rows are not compatible: different number of cells.");
         }
+        return true; // Rows are compatible
+    }
 
-        foreach ($this->cells as $index => $cell) {
-            if ($cell !== $other->cells->get($index)) {
-                return false;
-            }
-        }
-
-        return true;
+    public function equals(Row $other): bool
+    {
+        return $this->cells->toArray() === $other->cells->toArray();
     }
 
     public function addCell(string | int $cell): void

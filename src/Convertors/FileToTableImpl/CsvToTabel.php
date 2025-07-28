@@ -1,12 +1,13 @@
 <?php
 
-namespace Personal\CsvHandler\Utils;
+namespace Personal\CsvHandler\Convertors\FileToTableImpl;
 
 use Personal\CsvHandler\Model\Tabel;
 use Personal\CsvHandler\Model\Row;
+use Personal\CsvHandler\Convertors\ConvertorFromFileToTable;
 use SplFileObject;
 
-class CsvToTabel
+class CsvToTabel implements ConvertorFromFileToTable
 {
     public static function convert(SplFileObject $stream): Tabel
     {

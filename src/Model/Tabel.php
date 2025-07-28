@@ -6,27 +6,37 @@ use Ds\Vector;
 
 class Tabel
 {
-    private Vector $vector;
+
+    /**
+     * @var Vector<Row>
+     */
+    private Vector $rows;
 
     public function __construct()
     {
-        $this->vector = new Vector();
+        $this->rows = new Vector();
     }
 
     public function addRow(Row $row): void
     {
-        $this->vector->push($row);
+        $this->rows->push($row);
+    }
+
+    public function getRows(): Vector
+    {
+        return $this->rows;
     }
 
     public function addHeader(Row $row): void
     {
-        $this->vector->unshift($row);
+        $this->rows->first()->verifyCompatibility($row);
+        $this->rows->unshift($row);
     }
 
     public function addIndexedRow(): void
     {
         $startIndex = 0;
-        foreach ($this->vector as $row) {
+        foreach ($this->rows as $row) {
             if ($startIndex == 0) {
                 $row->addIndex("Index");
                 $startIndex++;
@@ -40,7 +50,7 @@ class Tabel
     public function reorderByHeader(Row $row): void
     {
         $newIndexOrder = new Vector([]);
-        $tableHeaders = $this->vector->first();
+        $tableHeaders = $this->rows->first();
 
         $newIndexOrder = $row->getOrderFrom($tableHeaders);
 
@@ -48,54 +58,54 @@ class Tabel
             throw new \InvalidArgumentException("The number of headers does not match the number of cells in the row.");
         }
 
-        foreach ($this->vector as $row) {
+        foreach ($this->rows as $row) {
             $row->reorderCells($newIndexOrder);
         }
     }
 
     public function removeColumn(int | string $header): void
     {
-        $index = is_int($header) ? $header : $this->vector->first()->headerToIndex($header);
-        foreach ($this->vector as $row) {
+        $index = is_numeric($header) ? (int)$header : $this->rows->first()->headerToIndex($header);
+        foreach ($this->rows as $row) {
             $row->removeCell($index);
         }
     }
 
     public function truncateColumn(int | string $header, int $length): void
     {
-        $index = is_int($header) ? $header : $this->vector->first()->headerToIndex($header);
-        foreach ($this->vector as $row) {
+        $index = is_numeric($header) ? (int)$header : $this->rows->first()->headerToIndex($header);
+        foreach ($this->rows as $row) {
             $row->truncateCell($index, $length);
         }
     }
 
     public function reformatDate(int | string $header, string $format): void
     {
-        $index = is_int($header) ? $header : $this->vector->first()->headerToIndex($header);
-        foreach ($this->vector as $row) {
+        $index = is_numeric($header) ? (int)$header : $this->rows->first()->headerToIndex($header);
+        foreach ($this->rows as $row) {
             $row->reformatDate($index, $format);
         }
     }
 
-    public function mergeTwoTabels(Tabel $tabel): void
+    public function appendFromTable(Tabel $tabel): void
     {
-        if (!$this->vector->first()->equals($tabel->vector->first())) {
+        if (!$this->rows->first()->equals($tabel->rows->first())) {
             throw new \InvalidArgumentException("Headers do not match.");
         }
 
-        foreach ($tabel->vector as $row) {
-            if ($this->vector->first()->equals($row)) {
+        foreach ($tabel->rows as $row) {
+            if ($this->rows->first()->equals($row)) {
                 continue; // Skip the header row
             }
-            $this->addRow($row);
+            $this->addRow($row->clone());
         }
     }
 
     public function encryptColumn(int | string $header, string $publicKey): void
     {
-        $index = is_int($header) ? $header : $this->vector->first()->headerToIndex($header);
-        foreach ($this->vector as $row) {
-            if ($this->vector->first() !== $row) {
+        $index = is_numeric($header) ? (int)$header : $this->rows->first()->headerToIndex($header);
+        foreach ($this->rows as $row) {
+            if ($this->rows->first() !== $row) {
                 $row->encryptCell($index, $publicKey);
             }
         }
@@ -103,9 +113,9 @@ class Tabel
 
     public function decryptColumn(int | string $header, string $privateKey): void
     {
-        $index = is_int($header) ? $header : $this->vector->first()->headerToIndex($header);
-        foreach ($this->vector as $row) {
-            if ($this->vector->first() !== $row) {
+        $index = is_numeric($header) ? (int)$header : $this->rows->first()->headerToIndex($header);
+        foreach ($this->rows as $row) {
+            if ($this->rows->first() !== $row) {
                 $row->decryptCell($index, $privateKey);
             }
         }
@@ -113,10 +123,10 @@ class Tabel
 
     public function signColumn(int | string $header, string $privateKey): void
     {
-        $index = is_int($header) ? $header : $this->vector->first()->headerToIndex($header);
-        foreach ($this->vector as $row) {
+        $index = is_numeric($header) ? (int)$header : $this->rows->first()->headerToIndex($header);
+        foreach ($this->rows as $row) {
 
-            if ($this->vector->first() === $row) {
+            if ($this->rows->first() === $row) {
                 $row->addCell("Signature");
                 continue;
             }
@@ -127,9 +137,9 @@ class Tabel
 
     public function verifyColumn(int | string $header, string $publicKey): bool
     {
-        $index = is_int($header) ? $header : $this->vector->first()->headerToIndex($header);
-        foreach ($this->vector as $row) {
-            if ($this->vector->first() !== $row && !$row->verifyCell($index, $publicKey)) {
+        $index = is_numeric($header) ? (int)$header : $this->rows->first()->headerToIndex($header);
+        foreach ($this->rows as $row) {
+            if ($this->rows->first() !== $row && !$row->verifyCell($index, $publicKey)) {
                 return false;
             }
         }
@@ -138,7 +148,7 @@ class Tabel
 
     public function print(): void
     {
-        foreach ($this->vector as $row) {
+        foreach ($this->rows as $row) {
             echo $row . PHP_EOL;
         }
     }
