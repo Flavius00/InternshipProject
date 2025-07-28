@@ -12,6 +12,7 @@ use Personal\CsvHandler\Functionalities\EncryptFunctionality;
 use Personal\CsvHandler\Functionalities\DecryptFunctionality;
 use Personal\CsvHandler\Functionalities\SignFunctionality;
 use Personal\CsvHandler\Functionalities\VerifySignatureFunctionality;
+use Personal\CsvHandler\Functionalities\JoinFunctionality;
 
 
 
@@ -71,7 +72,8 @@ try {
         'decrypt-column',
         'sign-column',
         'verify-column',
-        'merge-tables'
+        'merge-tables',
+        'join-tables-on'
     ];
 
     $selectedOption = null;
@@ -135,6 +137,14 @@ try {
                 throw new Exception("Second table is required for merging.");
             }
             $tabel1->appendFromTable($tabel2);
+            break;
+
+        case 'join-tables-on':
+            if ($tabel2 === null) {
+                throw new Exception("Second table is required for joining.");
+            }
+            $func = new JoinFunctionality();
+            $tabel1 = $func->modify($options['join-tables-on'], $tabel1, $tabel2);
             break;
 
         default:

@@ -1,5 +1,5 @@
-id,name,created_at,email
-1,Alex,31-12-2024,alex@example.com
-2,Bianca,15-01-2025,bianca@example.com
-3,Cosmin,23-07-2025,cosmin@example.com
-4,Daria,23-07-2025,daria@example.com
+id,status,score,notes
+1,active,85,Excellent performance
+4,inactive,42,Needs improvement
+5,active,91,Top performer
+7,on_leave,60,Medical reasons

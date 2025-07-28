@@ -25,6 +25,16 @@ class Row
         return $newRow;
     }
 
+    public function appendWithout(Row $row, int $skipIndex): void
+    {
+        foreach ($row->getCells() as $index => $cell) {
+            if ($index === $skipIndex) {
+                continue; // Skip the cell at the specified index
+            }
+            $this->addCell($cell);
+        }
+    }
+
     public function getCells(): Vector
     {
         return $this->cells;
@@ -160,5 +170,23 @@ class Row
         $signature = base64_decode($this->cells->last());
 
         return openssl_verify($data, $signature, $publicKey) === 1;
+    }
+
+    /**
+     * Joins the current row with another row if their specified columns match.
+     *
+     * @return Row if the rows are compatible and the join was successful
+     * @return null if the rows are not compatible
+     */
+    public function joinIfCompatible(Row $other, int $myIndex, int $otherIndex): ?Row
+    {
+        $myValue = $this->cells->get($myIndex);
+        $otherValue = $other->cells->get($otherIndex);
+
+        if ($myValue === $otherValue) {
+            $this->appendWithout($other, $otherIndex);
+            return $this;
+        }
+        return null;
     }
 }
