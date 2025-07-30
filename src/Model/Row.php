@@ -25,19 +25,19 @@ class Row
         return $newRow;
     }
 
+    public function getCells(): Vector
+    {
+        return $this->cells;
+    }
+
     public function appendWithout(Row $row, int $skipIndex): void
     {
-        foreach ($row->getCells() as $index => $cell) {
+        foreach ($row->cells as $index => $cell) {
             if ($index === $skipIndex) {
                 continue; // Skip the cell at the specified index
             }
             $this->addCell($cell);
         }
-    }
-
-    public function getCells(): Vector
-    {
-        return $this->cells;
     }
 
     public function verifyCompatibility(Row $other): bool

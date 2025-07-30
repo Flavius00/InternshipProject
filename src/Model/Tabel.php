@@ -63,7 +63,7 @@ class Tabel
         }
     }
 
-    public function removeColumn(int | string $header): void
+    public function removeColumn(string $header): void
     {
         $index = is_numeric($header) ? (int)$header : $this->rows->first()->headerToIndex($header);
         foreach ($this->rows as $row) {
@@ -71,7 +71,7 @@ class Tabel
         }
     }
 
-    public function truncateColumn(int | string $header, int $length): void
+    public function truncateColumn(string $header, int $length): void
     {
         $index = is_numeric($header) ? (int)$header : $this->rows->first()->headerToIndex($header);
         foreach ($this->rows as $row) {
@@ -79,7 +79,7 @@ class Tabel
         }
     }
 
-    public function reformatDate(int | string $header, string $format): void
+    public function reformatDate(string $header, string $format): void
     {
         $index = is_numeric($header) ? (int)$header : $this->rows->first()->headerToIndex($header);
         foreach ($this->rows as $row) {
@@ -101,7 +101,7 @@ class Tabel
         }
     }
 
-    public function encryptColumn(int | string $header, string $publicKey): void
+    public function encryptColumn(string $header, string $publicKey): void
     {
         $index = is_numeric($header) ? (int)$header : $this->rows->first()->headerToIndex($header);
         foreach ($this->rows as $row) {
@@ -111,7 +111,7 @@ class Tabel
         }
     }
 
-    public function decryptColumn(int | string $header, string $privateKey): void
+    public function decryptColumn(string $header, string $privateKey): void
     {
         $index = is_numeric($header) ? (int)$header : $this->rows->first()->headerToIndex($header);
         foreach ($this->rows as $row) {
@@ -121,7 +121,7 @@ class Tabel
         }
     }
 
-    public function signColumn(int | string $header, string $privateKey): void
+    public function signColumn(string $header, string $privateKey): void
     {
         $index = is_numeric($header) ? (int)$header : $this->rows->first()->headerToIndex($header);
         foreach ($this->rows as $row) {
@@ -135,7 +135,7 @@ class Tabel
         }
     }
 
-    public function verifyColumn(int | string $header, string $publicKey): bool
+    public function verifyColumn(string $header, string $publicKey): bool
     {
         $index = is_numeric($header) ? (int)$header : $this->rows->first()->headerToIndex($header);
         foreach ($this->rows as $row) {
@@ -144,6 +144,37 @@ class Tabel
             }
         }
         return true;
+    }
+
+    public function joinWithTable($otherTable, string $myColumn, string $otherColumn): Tabel
+    {
+        $myIndex = is_numeric($myColumn) ? (int)$myColumn : $this->rows->first()->headerToIndex($myColumn);
+        $otherIndex = is_numeric($otherColumn) ? (int)$otherColumn : $otherTable->rows->first()->headerToIndex($otherColumn);
+
+        if ($myIndex === -1 || $otherIndex === -1) {
+            throw new \InvalidArgumentException("Column not found in one of the tables.");
+        }
+
+        $this->rows->first()->appendWithout($otherTable->rows->first(), $otherIndex);
+
+        $newTable = new Tabel();
+        $newTable->addRow($this->rows->first()->clone()); // Add header row
+
+        foreach ($this->rows as $myRow) {
+            if ($myRow->equals($this->rows->first())) {
+                continue; // Skip the header row
+            }
+            foreach ($otherTable->rows as $otherRow) {
+                if ($otherRow->equals($otherTable->rows->first())) {
+                    continue; // Skip the header row
+                }
+                $newRow = $myRow->joinIfCompatible($otherRow, $myIndex, $otherIndex);
+                if ($newRow !== null) {
+                    $newTable->addRow($newRow);
+                }
+            }
+        }
+        return $newTable;
     }
 
     public function print(): void
